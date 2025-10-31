@@ -1,0 +1,12 @@
+{
+  "name": "showmojo-webhook-vercel",
+  "version": "1.0.0",
+  "description": "ShowMojo webhook handler for Vercel",
+  "main": "api/webhook.js",
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
