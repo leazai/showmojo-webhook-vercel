@@ -11,9 +11,5 @@
       "src": "/webhook",
       "dest": "/api/webhook.js"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "SHOWMOJO_BEARER_TOKEN": "@showmojo_bearer_token"
-  }
+  ]
 }
