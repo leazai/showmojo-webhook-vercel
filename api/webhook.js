@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+// Force fresh deployment with transaction pooler
 
 module.exports = async (req, res) => {
   // Set CORS headers
