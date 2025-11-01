@@ -16,12 +16,28 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Debug: Check if environment variables are loaded
+  console.log('Environment check:', {
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasToken: !!process.env.SHOWMOJO_BEARER_TOKEN,
+    databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) : 'MISSING'
+  });
+
   // Verify authorization
   const authHeader = req.headers.authorization;
   const expectedToken = process.env.SHOWMOJO_BEARER_TOKEN;
   
+  if (!expectedToken) {
+    return res.status(500).json({ error: 'Server configuration error: Missing SHOWMOJO_BEARER_TOKEN' });
+  }
+  
   if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
     return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Check DATABASE_URL
+  if (!process.env.DATABASE_URL) {
+    return res.status(500).json({ error: 'Server configuration error: Missing DATABASE_URL' });
   }
 
   try {
@@ -33,13 +49,19 @@ module.exports = async (req, res) => {
 
     const event = payload.event;
     
-    // Connect to Supabase PostgreSQL
+    // Connect to Supabase PostgreSQL with better configuration
     const client = new Client({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000,
+      query_timeout: 10000,
+      statement_timeout: 10000,
+      idle_in_transaction_session_timeout: 10000
     });
 
+    console.log('Attempting to connect to database...');
     await client.connect();
+    console.log('Database connected successfully');
 
     try {
       // Insert event
@@ -140,6 +162,10 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Error processing webhook:', error);
-    return res.status(500).json({ error: 'Internal server error', details: error.message });
+    return res.status(500).json({ 
+      error: 'Internal server error', 
+      details: error.message,
+      stack: error.stack 
+    });
   }
 };
