@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+const config = require('./config');
 // Force fresh deployment with transaction pooler
 
 module.exports = async (req, res) => {
@@ -26,7 +27,7 @@ module.exports = async (req, res) => {
 
   // Verify authorization
   const authHeader = req.headers.authorization;
-  const expectedToken = process.env.SHOWMOJO_BEARER_TOKEN;
+  const expectedToken = config.SHOWMOJO_BEARER_TOKEN;
   
   if (!expectedToken) {
     return res.status(500).json({ error: 'Server configuration error: Missing SHOWMOJO_BEARER_TOKEN' });
@@ -37,7 +38,7 @@ module.exports = async (req, res) => {
   }
 
   // Check DATABASE_URL
-  if (!process.env.DATABASE_URL) {
+  if (!config.DATABASE_URL) {
     return res.status(500).json({ error: 'Server configuration error: Missing DATABASE_URL' });
   }
 
@@ -52,7 +53,7 @@ module.exports = async (req, res) => {
     
     // Connect to Supabase PostgreSQL with better configuration
     const client = new Client({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: config.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
       connectionTimeoutMillis: 10000,
       query_timeout: 10000,
